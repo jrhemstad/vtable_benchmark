@@ -1,6 +1,8 @@
 #include <vector>
 #include <iostream>
 #include <typeinfo>
+#include <algorithm> // for copy
+#include <iterator> // for ostream_iterator
 
 enum types
 {
@@ -12,31 +14,26 @@ enum types
 
 struct column
 {
+  template<typename T>
+  column(std::vector<T> & v)
+  {
+    data = v.data();
+    size = v.size();
+
+    if(std::is_same<T, char>::value) t = CHAR;
+    else if(std::is_same<T, int>::value) t = INT;
+    else if(std::is_same<T, float>::value) t = FLOAT;
+    else if(std::is_same<T, double>::value) t = DOUBLE;
+    else
+    {
+      std::cout << "Invalid vector type.\n";
+    }
+  }
+
   void * data;
   types t;
   int size;
 };
-
-template <typename T>
-column make_column(std::vector<T> v)
-{
-  column the_column;
-
-  the_column.data = v.data();
-  the_column.size = v.size();
-
-  if(std::is_same<T, char>::value) the_column.t = CHAR;
-  else if(std::is_same<T, int>::value) the_column.t = INT;
-  else if(std::is_same<T, float>::value) the_column.t = FLOAT;
-  else if(std::is_same<T, double>::value) the_column.t = DOUBLE;
-  else
-  {
-    std::cout << "Invalid vector type.\n";
-    return column{nullptr,CHAR};
-  }
-
-  return the_column;
-}
 
 void add_column_elements(column const& l_column, const int l_index,
                          column const& r_column, const int r_index)
@@ -82,7 +79,6 @@ void add_column_elements(column const& l_column, const int l_index,
 
 struct BaseColumn
 {
-
   virtual void add_element(BaseColumn const& other_column, const int my_index, const int other_index ) = 0;
 
 protected:
@@ -95,10 +91,8 @@ protected:
 template <typename T>
 struct TypedColumn : BaseColumn
 {
-
   TypedColumn(column the_column) : BaseColumn{the_column}, data{static_cast<T*>(base_data)}
-  { 
-  }
+  { }
 
   virtual void add_element(BaseColumn const& other_column, const int my_index, const int other_index ) override
   {
@@ -123,17 +117,16 @@ private:
 
 int main()
 {
-  std::vector<int> left(100,1);
-  std::vector<int> right(100,2);
+  std::vector<int> left(10,1);
+  std::vector<int> right(10,2);
 
-  column left_column = make_column(left);
-  column right_column = make_column(right);
+  column left_column{left};
+  column right_column{right};
 
-  BaseColumn * left_base = new TypedColumn<int>(left_column);
-  BaseColumn * right_base = new TypedColumn<int>(right_column);
+  BaseColumn * left_base{new TypedColumn<int>(left_column)};
+  BaseColumn * right_base{new TypedColumn<int>(right_column)};
 
   left_base->add_element(*right_base, 0,0);
 
   std::cout << left[0] << std::endl;
-  std::cout << right[0] << std::endl;
 }
