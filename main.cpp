@@ -3,6 +3,7 @@
 #include <typeinfo>
 #include <algorithm> // for copy
 #include <iterator> // for ostream_iterator
+#include <chrono>
 
 enum types
 {
@@ -81,10 +82,10 @@ struct BaseColumn
 {
   virtual void add_element(BaseColumn const& other_column, const int my_index, const int other_index ) = 0;
 
+  void * base_data;
 protected:
   BaseColumn(column the_column) : base_data{the_column.data}, size{the_column.size}
   {}
-  void * base_data;
   int size;
 };
 
@@ -100,33 +101,40 @@ struct TypedColumn : BaseColumn
     // Is there some way to guarantee that they are the same?
     // Solution 1: Check that the enum types are equal
     // Solution 2: Use dynamic cast and check for nullptr/thrown exception
-    // Check the overhead of this...
-    try {
-      TypedColumn<T> const& actual_column = dynamic_cast< TypedColumn<T> const&>(other_column);
-      std::cout << "Adding " << data[my_index] << " and " << actual_column.data[other_index] << std::endl;
-      data[my_index] += actual_column.data[other_index];
-    } 
-    catch(const std::bad_cast& e) {
-      printf("Tried to add two columns of different types.\n");
-    }
+    data[my_index] += static_cast<T*>(other_column.base_data)[other_index];
   }
 
 private:
   T * data;
 };
 
+constexpr size_t INPUT_SIZE{1000000000};
+
 int main()
 {
-  std::vector<int> left(10,1);
-  std::vector<int> right(10,2);
+  std::vector<int> left(INPUT_SIZE,1);
+  std::vector<int> right(INPUT_SIZE,2);
 
   column left_column{left};
   column right_column{right};
 
+  auto start = std::chrono::high_resolution_clock::now();
+  for(int i = 0; i < INPUT_SIZE; ++i)
+    add_column_elements(left_column, i,
+                        right_column, i);
+  auto stop = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> duration = stop - start;
+
+  std::cout << "Switch duration(s): " << duration.count() << "\n";
+
   BaseColumn * left_base{new TypedColumn<int>(left_column)};
   BaseColumn * right_base{new TypedColumn<int>(right_column)};
 
-  left_base->add_element(*right_base, 0,0);
+  start = std::chrono::high_resolution_clock::now();
+  for(int i = 0; i < INPUT_SIZE; ++i)
+    left_base->add_element(*right_base, i, i);
+  stop = std::chrono::high_resolution_clock::now();
+  duration = stop - start;
 
-  std::cout << left[0] << std::endl;
+  std::cout << "Vtable duration(s): " << duration.count() << "\n";
 }
