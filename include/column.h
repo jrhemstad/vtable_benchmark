@@ -2,6 +2,9 @@
 #define COLUMN_H
 #include <type_traits>
 #include <vector>
+#include <numeric>
+#include <algorithm>
+#include <random>
 
 enum types
 {
@@ -13,7 +16,7 @@ enum types
 
 struct column
 {
-  template<typename T>
+  template <typename T>
   column(std::vector<T> & v)
   {
     data = v.data();
