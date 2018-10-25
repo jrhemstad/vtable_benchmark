@@ -18,10 +18,16 @@ enum types
 struct column
 {
   template <typename T>
-  column(std::vector<T> & v)
+  column(std::vector<T> & v, bool device_column = false) : size{v.size()}, on_device{device_column}
   {
-    data = v.data();
-    size = v.size();
+
+    if(true == device_column)
+    {
+      cudaMalloc(&data, size * sizeof(T));
+      cudaMemcpy(data, v.data(), size*sizeof(T), cudaMemcpyHostToDevice);
+    }
+    else
+      data = v.data();
 
     if(std::is_same<T, char>::value) t = CHAR;
     else if(std::is_same<T, int>::value) t = INT;
@@ -33,9 +39,16 @@ struct column
     }
   }
 
+  ~column()
+  {
+    if(on_device)
+      cudaFree(data);
+  }
+
   void * data;
   types t;
-  int size;
+  size_t size;
+  bool on_device;
 };
 
 #endif

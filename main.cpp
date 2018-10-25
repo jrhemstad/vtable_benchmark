@@ -6,8 +6,8 @@
 #include "include/switch_test.h"
 #include "include/virtual_test.cuh"
 
-const int INPUT_SIZE{100};
-const int ITERATIONS{1};
+const int INPUT_SIZE{10000000};
+const int ITERATIONS{10};
 
 int main()
 {

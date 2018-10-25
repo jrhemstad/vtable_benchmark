@@ -13,7 +13,7 @@ struct BaseColumn
 protected:
   BaseColumn(column the_column) : base_data{the_column.data}, size{the_column.size}
   {}
-  int size;
+  size_t size;
 };
 
 template <typename T>
@@ -95,14 +95,9 @@ double run_gpu_virtual_test(const int input_size, const int num_iterations)
   std::iota(right.begin(), right.end(), input_type(0));
   std::shuffle(right.begin(), right.end(), std::mt19937{std::random_device{}()});
 
-  column left_col(left);
-  column right_col(right);
-
-  cudaMalloc(&left_col.data, input_size * sizeof(input_type));
-  cudaMemcpy(left_col.data, left.data(), left.size() * sizeof(input_type), cudaMemcpyHostToDevice);
-
-  cudaMalloc(&right_col.data, input_size * sizeof(input_type));
-  cudaMemcpy(right_col.data, right.data(), right.size() * sizeof(input_type), cudaMemcpyHostToDevice);
+  bool device_column = true;
+  column left_col(left,device_column);
+  column right_col(right,device_column);
 
   BaseColumn * left_base{new TypedColumn<input_type>(left_col)};
   BaseColumn * right_base{new TypedColumn<input_type>(right_col)};
