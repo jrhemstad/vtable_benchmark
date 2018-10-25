@@ -1,6 +1,6 @@
 #ifndef SWITCH_H
 #define SWITCH_H
-#include "column.h"
+#include "column.cuh"
 #include <numeric>
 #include <algorithm>
 #include <random>

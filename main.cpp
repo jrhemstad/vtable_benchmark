@@ -3,38 +3,26 @@
 #include <typeinfo>
 #include <chrono>
 
-#include "include/column.h"
 #include "include/switch_test.h"
-#include "include/virtual_test.h"
+#include "include/virtual_test.cuh"
 
-
-constexpr size_t INPUT_SIZE{1000000000};
+const int INPUT_SIZE{100};
+const int ITERATIONS{1};
 
 int main()
 {
-  std::vector<int> left(INPUT_SIZE,1);
-  std::vector<int> right(INPUT_SIZE,2);
+  std::cout << "Running VTable vs Switch benchmark. Input Size: "
+            << INPUT_SIZE << " Iterations: " << ITERATIONS << "\n";
 
-  column left_column{left};
-  column right_column{right};
+  switch_test the_switch_test{};
+  const auto switch_duration = the_switch_test.run_cpu_test<int>(INPUT_SIZE, ITERATIONS);
 
-  auto start = std::chrono::high_resolution_clock::now();
-  for(int i = 0; i < INPUT_SIZE; ++i)
-    add_column_elements(left_column, i,
-                        right_column, i);
-  auto stop = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> duration = stop - start;
+  std::cout << "CPU Switch duration(s): " << switch_duration << "\n";
 
-  std::cout << "Switch duration(s): " << duration.count() << "\n";
+  double virtual_duration = run_cpu_virtual_test<int>(INPUT_SIZE, ITERATIONS);
+  std::cout << "CPU Virtual duration(s): " << virtual_duration << "\n";
 
-  BaseColumn * left_base{new TypedColumn<int>(left_column)};
-  BaseColumn * right_base{new TypedColumn<int>(right_column)};
 
-  start = std::chrono::high_resolution_clock::now();
-  for(int i = 0; i < INPUT_SIZE; ++i)
-    left_base->add_element(*right_base, i, i);
-  stop = std::chrono::high_resolution_clock::now();
-  duration = stop - start;
-
-  std::cout << "Vtable duration(s): " << duration.count() << "\n";
+  double virtual_gpu_duration = run_gpu_virtual_test<int>(INPUT_SIZE, ITERATIONS);
+  std::cout << "GPU Virtual duration(s): " << virtual_gpu_duration << "\n";
 }

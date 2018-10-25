@@ -11,7 +11,7 @@ CUDA_ROOT_DIR=/usr/local/cuda
 
 # CXX compiler options:
 CXX=g++
-CXX_FLAGS= -std=c++11 -O3
+CXX_FLAGS= -std=c++11 -O3 -g
 CXX_LIBS=
 
 ##########################################################
@@ -20,7 +20,7 @@ CXX_LIBS=
 
 # NVCC compiler options:
 NVCC=nvcc
-NVCC_FLAGS= -O3
+NVCC_FLAGS= -O3 -std=c++11 -g -G
 NVCC_LIBS=
 
 # CUDA library directory:
@@ -51,7 +51,7 @@ INC_DIR = include
 EXE = run_test
 
 # Object files:
-OBJS = $(OBJ_DIR)/main.o 
+OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/virtual_test.o
 
 ##########################################################
 

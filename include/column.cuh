@@ -5,6 +5,7 @@
 #include <numeric>
 #include <algorithm>
 #include <random>
+#include <thrust/device_vector.h>
 
 enum types
 {
