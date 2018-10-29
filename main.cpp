@@ -9,8 +9,8 @@
 #include "include/switch_test.cuh"
 #include "include/virtual_test.cuh"
 
-const int INPUT_SIZE{100};
-const int ITERATIONS{1};
+const int INPUT_SIZE{100000000};
+const int ITERATIONS{10};
 
 template <typename T>
 std::vector<T> generate_random_vector(const int size){
@@ -18,6 +18,25 @@ std::vector<T> generate_random_vector(const int size){
   std::iota(vec.begin(), vec.end(), T(0));
   std::shuffle(vec.begin(), vec.end(), std::mt19937{std::random_device{}()});
   return vec;
+}
+
+template <typename T>
+bool is_equal(std::vector<T> const& lhs, std::vector<T> const& rhs)
+{
+
+  bool equal = std::equal(lhs.begin(), lhs.end(), rhs.begin());
+
+  if(false == equal)
+  {
+    for(int i = 0; i < lhs.size() && i < rhs.size(); ++i)
+    {
+      if(lhs[i] != rhs[i]){
+        std::cout << i << ": lhs: " << lhs[i] 
+                       << " rhs: " << rhs[i] << "\n";
+      }
+    }
+  }
+  return equal;
 }
 
 int main()
@@ -34,23 +53,17 @@ int main()
 
   auto cpu_virtual_result = run_cpu_virtual_test(left, right, ITERATIONS);
 
-  if(false == std::equal(cpu_switch_result.begin(), cpu_switch_result.end(), 
-                         cpu_virtual_result.begin()))
-  {
-    std::cout << "ERROR: result mismatch between CPU Switch and Virtual test!\n";
+  auto gpu_switch_result = run_gpu_switch_test(left, right, ITERATIONS);
 
-    for(int i = 0; i < left.size(); ++i)
-    {
-      if(cpu_switch_result[i] != cpu_virtual_result[i]){
-        std::cout << i << ": switch: " << cpu_switch_result[i] 
-                       << " virtual: " << cpu_virtual_result[i] << "\n";
-      }
-    }
-  }
+  auto gpu_virtual_result = run_gpu_virtual_test(left, right, ITERATIONS);
 
-  double virtual_gpu_duration = run_gpu_virtual_test<input_t>(INPUT_SIZE, ITERATIONS);
-  std::cout << "GPU Virtual duration(s): " << virtual_gpu_duration << "\n";
+  if( false == is_equal(cpu_switch_result, cpu_virtual_result) )
+    std::cout << "ERROR: result mismatch between CPU Switch and CPU Virtual test!\n";
 
-  double switch_gpu_duration = run_gpu_switch_test<input_t>(INPUT_SIZE, ITERATIONS);
-  std::cout << "GPU switch duration(s): " << switch_gpu_duration << "\n";
+  if( false == is_equal(cpu_switch_result, gpu_virtual_result) )
+    std::cout << "ERROR: result mismatch between CPU Switch and GPU Virtual test!\n";
+
+  if( false == is_equal(gpu_virtual_result, gpu_switch_result) )
+    std::cout << "ERROR: result mismatch between GPU Switch and GPU Virtual test!\n";
+
 }

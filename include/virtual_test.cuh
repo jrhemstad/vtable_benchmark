@@ -8,7 +8,9 @@ std::vector<input_type> run_cpu_virtual_test(std::vector<input_type> left,
 
 
 template <typename input_type>
-double run_gpu_virtual_test(int input_size, int num_iterations);
+std::vector<input_type> run_gpu_virtual_test(std::vector<input_type> left,
+                                             std::vector<input_type> right,
+                                             const int num_iterations);
 
 
 #endif
