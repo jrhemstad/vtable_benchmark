@@ -11,7 +11,7 @@ CUDA_ROOT_DIR=/usr/local/cuda
 
 # CXX compiler options:
 CXX=g++
-CXX_FLAGS= -std=c++11 -g
+CXX_FLAGS= -std=c++11 -O3
 CXX_LIBS=
 
 ##########################################################
@@ -20,7 +20,7 @@ CXX_LIBS=
 
 # NVCC compiler options:
 NVCC=nvcc
-NVCC_FLAGS= -O3 -std=c++11 -g -G
+NVCC_FLAGS= -O3 -std=c++11
 NVCC_LIBS=
 
 # CUDA library directory:

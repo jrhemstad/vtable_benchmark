@@ -40,18 +40,13 @@ private:
 };
 
 template <typename input_type>
-double run_cpu_virtual_test(const int input_size, const int num_iterations)
+std::vector<input_type> run_cpu_virtual_test(std::vector<input_type> left,
+                                             std::vector<input_type> right,
+                                             const int num_iterations)
 {
-  // Generate random input vector
-  std::vector<input_type> left(input_size);
-  std::iota(left.begin(), left.end(), input_type(0));
-  std::shuffle(left.begin(), left.end(), std::mt19937{std::random_device{}()});
+  std::vector<input_type> result{left};
 
-  std::vector<input_type> right(input_size);
-  std::iota(right.begin(), right.end(), input_type(0));
-  std::shuffle(right.begin(), right.end(), std::mt19937{std::random_device{}()});
-
-  column left_col(left);
+  column left_col(result);
   column right_col(right);
 
   BaseColumn * left_base{new TypedColumn<input_type>(left_col)};
@@ -60,7 +55,7 @@ double run_cpu_virtual_test(const int input_size, const int num_iterations)
   auto start = std::chrono::high_resolution_clock::now();
   for(int iter = 0; iter < num_iterations; ++iter)
   {
-    for(int i = 0; i < input_size; ++i)
+    for(int i = 0; i < left.size(); ++i)
     {
       left_base->add_element(*right_base, i, i);
     }
@@ -69,10 +64,16 @@ double run_cpu_virtual_test(const int input_size, const int num_iterations)
 
   std::chrono::duration<double> elapsed = stop - start;
 
-  return elapsed.count();
+  std::cout << "CPU Virtual test elpased time (s): " << elapsed.count() << "\n";
+
+  return result;
 }
-template double run_cpu_virtual_test<int>(int input_size, int num_iterations);
-template double run_cpu_virtual_test<double>(int input_size, int num_iterations);
+template std::vector<int> run_cpu_virtual_test<int>(std::vector<int> left,
+                                                   std::vector<int> right,
+                                                   const int num_iterations);
+template std::vector<double> run_cpu_virtual_test<double>(std::vector<double> left,
+                                                         std::vector<double> right,
+                                                         const int num_iterations);
 
 __global__
 void test_kernel(BaseColumn ** left, BaseColumn ** right, size_t size)
