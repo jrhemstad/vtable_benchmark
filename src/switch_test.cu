@@ -68,6 +68,7 @@ std::vector<input_type> run_cpu_switch_test(std::vector<input_type> left,
 
   std::chrono::duration<double> elapsed = stop - start;
 
+  
   std::cout << "CPU Switch test elapsed time(s): " << elapsed.count() << "\n";
 
   return result;
@@ -118,9 +119,13 @@ std::vector<input_type> run_gpu_switch_test(std::vector<input_type> left,
 
   std::chrono::duration<double> elapsed = stop - start;
 
+
   std::cout << "GPU Switch test elapsed time(s): " << elapsed.count() << "\n";
 
   cudaMemcpy(result.data(), left_col.data, left.size() * sizeof(input_type), cudaMemcpyDeviceToHost);
+
+  cudaFree(left_col.data);
+  cudaFree(right_col.data);
 
   return result;
 }

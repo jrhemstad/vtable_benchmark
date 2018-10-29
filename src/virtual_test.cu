@@ -129,9 +129,14 @@ std::vector<input_type> run_gpu_virtual_test(std::vector<input_type> left,
 
   auto stop = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> elapsed = stop - start;
+
+
   std::cout << "GPU Virtual test elpased time (s): " << elapsed.count() << "\n";
 
   cudaMemcpy(result.data(), left_col.data, result.size() * sizeof(input_type), cudaMemcpyDeviceToHost );
+
+  cudaFree(left_col.data);
+  cudaFree(right_col.data);
 
   return result;
 }
