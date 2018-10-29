@@ -51,7 +51,7 @@ INC_DIR = include
 EXE = run_test
 
 # Object files:
-OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/virtual_test.o $(OBJ_DIR)/switch_test.o
+OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/virtual_test.o $(OBJ_DIR)/switch_test.o $(OBJ_DIR)/baseline.o
 
 ##########################################################
 

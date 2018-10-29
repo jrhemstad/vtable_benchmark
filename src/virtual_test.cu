@@ -96,12 +96,6 @@ void derived_allocator(BaseColumn ** p, column the_column)
     *p = static_cast<BaseColumn*>(new TypedColumn<input_type>(the_column));
 }
 
-__global__
-void get_data_pointer(BaseColumn ** p, void ** data_pointer)
-{
-  *data_pointer = (*p)->base_data;
-}
-
 template <typename input_type>
 std::vector<input_type> run_gpu_virtual_test(std::vector<input_type> left,
                                              std::vector<input_type> right,
