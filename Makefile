@@ -11,7 +11,7 @@ CUDA_ROOT_DIR=/usr/local/cuda
 
 # CXX compiler options:
 CXX=g++
-CXX_FLAGS= -std=c++11 -O3 -g
+CXX_FLAGS= -std=c++11 -g
 CXX_LIBS=
 
 ##########################################################
@@ -51,7 +51,7 @@ INC_DIR = include
 EXE = run_test
 
 # Object files:
-OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/virtual_test.o
+OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/virtual_test.o $(OBJ_DIR)/switch_test.o
 
 ##########################################################
 

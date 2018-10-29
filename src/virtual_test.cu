@@ -1,5 +1,6 @@
 #include <thrust/device_vector.h>
 #include <chrono>
+#include <new> // overload new operator
 
 #include "../include/virtual_test.cuh"
 #include "../include/column.cuh"
@@ -11,7 +12,8 @@ struct BaseColumn
 
   void * base_data;
 protected:
-  BaseColumn(column the_column) : base_data{the_column.data}, size{the_column.size}
+  __host__ __device__
+  BaseColumn(column & the_column) : base_data{the_column.data}, size{the_column.size}
   {}
   size_t size;
 };
@@ -19,7 +21,8 @@ protected:
 template <typename T>
 struct TypedColumn : BaseColumn
 {
-  TypedColumn(column the_column) : BaseColumn{the_column}, data{static_cast<T*>(base_data)}
+  __host__ __device__
+  TypedColumn(column & the_column) : BaseColumn{the_column}, data{static_cast<T*>(base_data)}
   { }
 
   __host__ __device__
@@ -72,15 +75,23 @@ template double run_cpu_virtual_test<int>(int input_size, int num_iterations);
 template double run_cpu_virtual_test<double>(int input_size, int num_iterations);
 
 __global__
-void test_kernel(BaseColumn * left, BaseColumn * right, size_t size)
+void test_kernel(BaseColumn ** left, BaseColumn ** right, size_t size)
 {
   int idx = threadIdx.x + blockIdx.x * blockDim.x;
 
   while(idx < size)
   {
-    left->add_element(*right, idx, idx);
+    (*left)->add_element(**right, idx, idx);
     idx += gridDim.x * blockDim.x;
   }
+}
+
+template <typename input_type>
+__global__ 
+void derived_allocator(BaseColumn ** p, column the_column)
+{
+  if(0 == threadIdx.x)
+    *p = static_cast<BaseColumn*>(new TypedColumn<input_type>(the_column));
 }
 
 template <typename input_type>
@@ -96,11 +107,16 @@ double run_gpu_virtual_test(const int input_size, const int num_iterations)
   std::shuffle(right.begin(), right.end(), std::mt19937{std::random_device{}()});
 
   bool device_column = true;
-  column left_col(left,device_column);
-  column right_col(right,device_column);
+  column left_col(left, device_column);
+  column right_col(right, device_column);
 
-  BaseColumn * left_base{new TypedColumn<input_type>(left_col)};
-  BaseColumn * right_base{new TypedColumn<input_type>(right_col)};
+  BaseColumn ** left_base{nullptr};
+  cudaMalloc(&left_base, sizeof(BaseColumn*));
+  derived_allocator<input_type><<<1,1>>>(left_base, left_col);
+
+  BaseColumn ** right_base{nullptr};
+  cudaMalloc(&right_base, sizeof(BaseColumn*));
+  derived_allocator<input_type><<<1,1>>>(right_base, right_col);
 
   constexpr int block_size = 256;
   const int grid_size = (input_size + block_size - 1)/block_size;
@@ -110,19 +126,15 @@ double run_gpu_virtual_test(const int input_size, const int num_iterations)
   for(int i = 0; i < num_iterations; ++i)
     test_kernel<<<grid_size, block_size>>>(left_base, right_base, left.size());
 
-  cudaDeviceSynchronize();
+  if(cudaSuccess != cudaDeviceSynchronize()){
+    std::cout << "GPU Virtual Test failed!\n";
+  }
 
   auto stop = std::chrono::high_resolution_clock::now();
 
   std::chrono::duration<double> elapsed = stop - start;
 
-  cudaFree(left_col.data);
-  cudaFree(right_col.data);
-
   return elapsed.count();
 }
 template double run_gpu_virtual_test<int>(int input_size, int num_iterations);
 template double run_gpu_virtual_test<double>(int input_size, int num_iterations);
-
-
-
