@@ -3,6 +3,8 @@
 #include "../include/switch_test.cuh"
 #include "../include/column.cuh"
 
+const int NUM_BURN_IN = 2;
+
 __host__ __device__
 void add_column_elements(column const& l_column, const int l_index,
                          column const& r_column, const int r_index)
@@ -57,8 +59,11 @@ std::vector<input_type> run_cpu_switch_test(std::vector<input_type> left,
   column right_col(right);
 
   auto start = std::chrono::high_resolution_clock::now();
-  for(int iter = 0; iter < num_iterations; ++iter)
+  for(int iter = 0; iter < num_iterations + NUM_BURN_IN; ++iter)
   {
+    if(NUM_BURN_IN == iter)
+      start = std::chrono::high_resolution_clock::now();
+
     for(int i = 0; i < left.size(); ++i)
     {
       add_column_elements(left_col, i, right_col, i);
@@ -108,8 +113,16 @@ std::vector<input_type> run_gpu_switch_test(std::vector<input_type> left,
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  for(int i = 0; i < num_iterations; ++i)
+  for(int i = 0; i < num_iterations + NUM_BURN_IN; ++i)
+  {
+    if(NUM_BURN_IN == i)
+    {
+      cudaDeviceSynchronize();
+      start = std::chrono::high_resolution_clock::now();
+    }
+
     test_kernel<<<grid_size, block_size>>>(left_col, right_col, left.size());
+  }
 
   if(cudaSuccess != cudaDeviceSynchronize()){
     std::cout << "GPU Switch Test failed!\n";

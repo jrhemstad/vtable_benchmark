@@ -5,6 +5,8 @@
 #include "../include/virtual_test.cuh"
 #include "../include/column.cuh"
 
+const int NUM_BURN_IN = 2;
+
 struct BaseColumn
 {
   __host__ __device__
@@ -53,8 +55,11 @@ std::vector<input_type> run_cpu_virtual_test(std::vector<input_type> left,
   BaseColumn * right_base{new TypedColumn<input_type>(right_col)};
 
   auto start = std::chrono::high_resolution_clock::now();
-  for(int iter = 0; iter < num_iterations; ++iter)
+  for(int iter = 0; iter < num_iterations + NUM_BURN_IN; ++iter)
   {
+    if(NUM_BURN_IN == iter)
+      start = std::chrono::high_resolution_clock::now();
+
     for(int i = 0; i < left.size(); ++i)
     {
       left_base->add_element(*right_base, i, i);
@@ -120,8 +125,16 @@ std::vector<input_type> run_gpu_virtual_test(std::vector<input_type> left,
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  for(int i = 0; i < num_iterations; ++i)
+  for(int i = 0; i < num_iterations + NUM_BURN_IN; ++i)
+  {
+    if(NUM_BURN_IN == i)
+    {
+      cudaDeviceSynchronize();
+      start = std::chrono::high_resolution_clock::now();
+    }
+
     test_kernel<<<grid_size, block_size>>>(left_base, right_base, left.size());
+  }
 
   if(cudaSuccess != cudaDeviceSynchronize()){
     std::cout << "GPU Virtual Test failed!\n";

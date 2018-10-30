@@ -52,9 +52,6 @@ int main()
 
   /* CPU Tests */
 
-  // Burn in
-  run_cpu_baseline(left, right, ITERATIONS,false);
-
   auto cpu_baseline = run_cpu_baseline(left, right, ITERATIONS);
 
   auto cpu_switch_result = run_cpu_switch_test(left, right, ITERATIONS);
@@ -68,9 +65,6 @@ int main()
     std::cout << "ERROR: result mismatch between CPU Switch and CPU Virtual test!\n";
 
   /* GPU Tests */
-
-  // Burn in
-  run_gpu_baseline(left, right, ITERATIONS,false);
 
   auto gpu_baseline = run_gpu_baseline(left, right, ITERATIONS);
 
