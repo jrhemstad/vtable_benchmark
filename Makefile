@@ -20,7 +20,7 @@ CXX_LIBS=
 
 # NVCC compiler options:
 NVCC=nvcc
-NVCC_FLAGS= -O3 -std=c++11
+NVCC_FLAGS= -O3 -std=c++11 -arch=sm_70 
 NVCC_LIBS=
 
 # CUDA library directory:
