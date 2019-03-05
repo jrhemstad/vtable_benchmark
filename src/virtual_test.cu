@@ -7,6 +7,9 @@
 
 const int NUM_BURN_IN = 2;
 
+constexpr int VAL_SIZE{8};
+__device__ int value[VAL_SIZE] = {0, 1, 2, 3, 4, 5, 6, 7};
+
 struct BaseColumn
 {
   __host__ __device__
@@ -30,11 +33,38 @@ struct TypedColumn : BaseColumn
   __host__ __device__
   virtual void add_element(BaseColumn const& other_column, const int my_index, const int other_index ) override
   {
-    // DANGER: This assumes other_column is a TypedColumn<T> with the same T...
-    // Is there some way to guarantee that they are the same?
-    // Solution 1: Check that the enum types are equal
-    // Solution 2: Use dynamic cast and check for nullptr/thrown exception
-    data[my_index] += static_cast<T*>(other_column.base_data)[other_index];
+    T r0;
+    T r1;
+    T r2;
+    T r3;
+    T r4;
+    T r5;
+    T r6;
+    T r7;
+
+      for(int j = 0; j < VAL_SIZE; ++j )
+      {
+        r0 = value[j] * j;
+        r1 = value[j] * j;
+        r2 = value[j] * j;
+        r3 = value[j] * j;
+        r4 = value[j] * j;
+        r5 = value[j] * j;
+        r6 = value[j] * j;
+        r7 = value[j] * j;
+      }
+
+      for(int j = 0; j < VAL_SIZE; ++j )
+      {
+        data[my_index] += value[j] * r0;
+        data[my_index] += value[j] * r1;
+        data[my_index] += value[j] * r2;
+        data[my_index] += value[j] * r3;
+        data[my_index] += value[j] * r4;
+        data[my_index] += value[j] * r5;
+        data[my_index] += value[j] * r6;
+        data[my_index] += value[j] * r7;
+      }
   }
 
 private:

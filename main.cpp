@@ -8,10 +8,11 @@
 
 #include "include/switch_test.cuh"
 #include "include/virtual_test.cuh"
+#include "include/dispatch_test.cuh"
 #include "include/baseline.cuh"
 
-const int64_t INPUT_SIZE{1000000};
-const int ITERATIONS{10};
+const int64_t INPUT_SIZE{10000000};
+const int ITERATIONS{100};
 
 template <typename T>
 std::vector<T> generate_random_vector(const int64_t size){
@@ -52,20 +53,26 @@ int main()
 
   /* CPU Tests */
 
-  auto cpu_baseline = run_cpu_baseline(left, right, ITERATIONS);
+ // auto cpu_baseline = run_cpu_baseline(left, right, ITERATIONS);
 
-  auto cpu_switch_result = run_cpu_switch_test(left, right, ITERATIONS);
+ // auto cpu_switch_result = run_cpu_switch_test(left, right, ITERATIONS);
 
-  if( false == is_equal(cpu_baseline, cpu_switch_result))
-    std::cout << "CPU Switch Result does not match baseline\n";
+ // if( false == is_equal(cpu_baseline, cpu_switch_result))
+ //   std::cout << "CPU Switch Result does not match baseline\n";
 
-  auto cpu_virtual_result = run_cpu_virtual_test(left, right, ITERATIONS);
+ // auto cpu_virtual_result = run_cpu_virtual_test(left, right, ITERATIONS);
 
-  if( false == is_equal(cpu_switch_result, cpu_virtual_result) )
-    std::cout << "ERROR: result mismatch between CPU Switch and CPU Virtual test!\n";
+ // if( false == is_equal(cpu_switch_result, cpu_virtual_result) )
+ //   std::cout << "ERROR: result mismatch between CPU Switch and CPU Virtual test!\n";
+
+ // auto cpu_dispatch_result = run_cpu_dispatch_test(left, right, ITERATIONS);
+
+  //if(false == is_equal(cpu_baseline, cpu_dispatch_result))
+  //  std::cout << "ERROR: result mismatch between CPU Baseline and CPU Dispatch test!\n";
 
   /* GPU Tests */
 
+  /*
   auto gpu_baseline = run_gpu_baseline(left, right, ITERATIONS);
 
   if( false == is_equal(cpu_baseline, gpu_baseline) )
@@ -75,10 +82,13 @@ int main()
 
   if( false == is_equal(gpu_baseline, gpu_switch_result))
     std::cout << "ERROR: result mismatch between GPU baseline and GPU Switch test!\n";
+  */
 
   auto gpu_virtual_result = run_gpu_virtual_test(left, right, ITERATIONS);
 
+  /*
   if( false == is_equal(gpu_virtual_result, gpu_baseline) )
     std::cout << "ERROR: result mismatch between GPU baseline and GPU Virtual test!\n";
+  */
 
 }

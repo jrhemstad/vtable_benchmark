@@ -20,7 +20,7 @@ CXX_LIBS=
 
 # NVCC compiler options:
 NVCC=nvcc
-NVCC_FLAGS= -O3 -std=c++11 -arch=sm_70 
+NVCC_FLAGS= -O3 -std=c++11 -arch=sm_70 -Xptxas -v -G -lineinfo
 NVCC_LIBS=
 
 # CUDA library directory:
@@ -51,7 +51,7 @@ INC_DIR = include
 EXE = run_test
 
 # Object files:
-OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/virtual_test.o $(OBJ_DIR)/switch_test.o $(OBJ_DIR)/baseline.o
+OBJS = $(OBJ_DIR)/main.o $(OBJ_DIR)/virtual_test.o $(OBJ_DIR)/switch_test.o $(OBJ_DIR)/baseline.o $(OBJ_DIR)/dispatch_test.o
 
 ##########################################################
 
